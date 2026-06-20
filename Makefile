@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c2x -O2
+CFLAGS = -Wall -Wextra -std=c2x -g
 TARGET = tower_of_hanoi
 SRC = main.c solution.c termbox2.c
 OBJ = $(SRC:.c=.o)
