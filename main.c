@@ -4,9 +4,8 @@
 
 #include "./solution.h"
 
-struct Tower towers[3];
-
 unsigned char HEIGHT;
+struct Tower* towers[TOWER_COUNT];
 
 void
 set_height(unsigned char height) {
@@ -77,9 +76,9 @@ main(int argc, char* argv[]) {
   unsigned char height_of_tower = argument;
 
   printf("Total height is %hhu\n", height_of_tower);
-  create_stacks(height_of_tower);
+  create_towers(towers, height_of_tower);
 
-  solve_tower_of_hanoi(towers);
+  solve_tower_of_hanoi(*towers);
 
   return 0;
 }

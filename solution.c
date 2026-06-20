@@ -1,9 +1,6 @@
-#include <cstdlib>
 #include <stdlib.h>
 
 #include "./solution.h"
-
-#define TOWER_COUNT 3
 
 struct Tower {
   unsigned char max_height;
@@ -11,28 +8,29 @@ struct Tower {
   unsigned char array[255];
 };
 
-struct Tower towers[TOWER_COUNT];
-
 void
-create_towers(unsigned char max_height) {
+create_towers(struct Tower** towers, unsigned char max_height) {
   for (unsigned char index = 0; index < TOWER_COUNT; index += 1) {
-    struct Tower tower = towers[index];
+    struct Tower* tower = towers[index];
+    tower = malloc(sizeof(Tower));
 
-    tower.max_height = max_height;
-    tower.current_height = max_height;
+    tower->max_height = max_height;
+    tower->current_height = max_height;
 
     // Tower height is from 0 to 255)
     for (unsigned char tower_index = 0; tower_index <= max_height; tower_index += 1) {
       unsigned char height_of_index = max_height - tower_index;
 
-      tower.array[tower_index] = height_of_index;
+      tower->array[tower_index] = height_of_index;
     }
   }
+
+  return;
 }
 
 void
 move_stack(struct Tower* source, struct Tower* dest) {
-  if (source->current_height <= 0 || dest->current_height < 0) {
+  if (source->current_height == 0) {
     exit(EXIT_FAILURE);
   }
 
@@ -81,17 +79,25 @@ move_height(
 }
 
 void
-solve_tower_of_hanoi(struct Tower* towers, unsigned char height) {
+solve_tower_of_hanoi(struct Tower* towers) {
   struct Tower first_tower = towers[0];
   struct Tower second_tower = towers[1];
   struct Tower third_tower = towers[2];
 
-  for (unsigned char h = 0; h < height; h += 1) {
-    switch (h % 2) {
-      case 0: move_stack(&first_tower, &second_tower); break;
-      case 1: move_stack(&first_tower, &third_tower); break;
-    }
+  unsigned char max_height = first_tower.max_height;
 
-    move_height(towers, h - 1);
+  for (unsigned char h = 0; h < max_height; h += 1) {
+    switch (h % 2) {
+      case 0:
+        move_stack(&first_tower, &second_tower);
+        move_height(&third_tower, &first_tower, &second_tower, h - 1);
+
+        break;
+      case 1:
+        move_stack(&first_tower, &third_tower);
+        move_height(&second_tower, &first_tower, &third_tower, h - 1);
+
+        break;
+    }
   }
 }
