@@ -1,18 +1,22 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c23 -O2
+CFLAGS = -Wall -Wextra -std=c2x -O2
 TARGET = tower_of_hanoi
 SRC = main.c solution.c
 OBJ = $(SRC:.c=.o)
 
-.PHONY: all clean format run test
+.PHONY: all clean format run test lint build
+
+build: $(TARGET)
 
 all: $(TARGET)
 
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	mkdir -p -- dest
+	$(CC) $(CFLAGS) -o dest/$@ $(addprefix dest/,$^)
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	mkdir -p -- dest
+	$(CC) $(CFLAGS) -c $< -o dest/$@
 
 clean:
 	rm -f $(OBJ) $(TARGET)
@@ -23,6 +27,9 @@ format:
 run: $(TARGET)
 	./$(TARGET)
 
+lint: $(TARGET)
+	@echo "Running linting..."
+	./scripts/check-format.sh
+
 test: $(TARGET)
 	@echo "Running tests..."
-	./$(TARGET)
