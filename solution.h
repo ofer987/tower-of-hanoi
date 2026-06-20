@@ -2,6 +2,12 @@ typedef struct Tower Tower;
 
 #define TOWER_COUNT 3
 
+unsigned char*
+get_tower_stacks(struct Tower*);
+
+unsigned char
+get_current_tower_height(struct Tower*);
+
 void
 create_towers(struct Tower** towers, unsigned char);
 

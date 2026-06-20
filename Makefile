@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c2x -O2
 TARGET = tower_of_hanoi
-SRC = main.c solution.c
+SRC = main.c solution.c termbox2.c
 OBJ = $(SRC:.c=.o)
 
 .PHONY: all clean format run test lint build
@@ -19,7 +19,7 @@ $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o dest/$@
 
 clean:
-	rm -f $(OBJ) $(TARGET)
+	rm -f $(addprefix dest/,$(OBJ)) dest/$(TARGET)
 
 format:
 	clang-format -i $(SRC)
