@@ -8,6 +8,16 @@ struct Tower {
   unsigned char array[255];
 };
 
+unsigned char*
+get_tower_stacks(struct Tower* tower) {
+  return tower->array;
+}
+
+unsigned char
+get_current_tower_height(struct Tower* tower) {
+  return tower->current_height;
+}
+
 void
 create_towers(struct Tower** towers, unsigned char max_height) {
   for (unsigned char index = 0; index < TOWER_COUNT; index += 1) {
