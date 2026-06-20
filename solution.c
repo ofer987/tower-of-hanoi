@@ -8,6 +8,8 @@ struct Tower {
   unsigned char array[255];
 };
 
+static struct Tower* towers[3];
+
 unsigned char*
 get_tower_stacks(struct Tower* tower) {
   return tower->array;
@@ -18,8 +20,8 @@ get_current_tower_height(struct Tower* tower) {
   return tower->current_height;
 }
 
-void
-create_towers(struct Tower** towers, unsigned char max_height) {
+struct Tower**
+create_towers(unsigned char max_height) {
   for (unsigned char index = 0; index < TOWER_COUNT; index += 1) {
     // TODO: reference static Towers
     towers[index] = malloc(sizeof(struct Tower));
@@ -27,30 +29,34 @@ create_towers(struct Tower** towers, unsigned char max_height) {
     struct Tower* tower = towers[index];
 
     tower->max_height = max_height;
-    tower->current_height = max_height;
-
-    // Tower height is from 0 to 255)
-    for (unsigned char tower_index = 0; tower_index <= max_height; tower_index += 1) {
-      unsigned char height_of_index = max_height - tower_index;
-
-      tower->array[tower_index] = height_of_index;
-    }
+    tower->current_height = 0;
   }
 
-  return;
+  struct Tower* tower = towers[0];
+  tower->current_height = max_height;
+
+  // Tower height is from 1 to 255)
+  for (unsigned char tower_index = 0; tower_index < max_height; tower_index += 1) {
+    unsigned char height_of_index = max_height - tower_index;
+
+    tower->array[tower_index] = height_of_index;
+  }
+
+  return towers;
 }
 
 void
 move_stack(struct Tower* source, struct Tower* dest) {
   if (source->current_height == 0) {
-    exit(EXIT_FAILURE);
+    return;
   }
 
   if (source->current_height > source->max_height || dest->current_height >= dest->max_height) {
     exit(EXIT_FAILURE);
   }
 
-  unsigned char stack_height = source->array[source->current_height];
+  unsigned char stack_height = source->array[source->current_height - 1];
+  source->array[source->current_height - 1] = 0;
   source->current_height -= 1;
 
   dest->array[dest->current_height] += stack_height;
@@ -91,23 +97,27 @@ move_height(
 }
 
 void
-solve_tower_of_hanoi(struct Tower* towers) {
-  struct Tower first_tower = towers[0];
-  struct Tower second_tower = towers[1];
-  struct Tower third_tower = towers[2];
+solve_tower_of_hanoi(struct Tower** towers) {
+  struct Tower* first_tower = towers[0];
+  struct Tower* second_tower = towers[1];
+  struct Tower* third_tower = towers[2];
 
-  unsigned char max_height = first_tower.max_height;
+  unsigned char max_height = first_tower->max_height;
 
   for (unsigned char h = 0; h < max_height; h += 1) {
     switch (h % 2) {
       case 0:
-        move_stack(&first_tower, &second_tower);
-        move_height(&third_tower, &first_tower, &second_tower, h - 1);
+        move_stack(first_tower, second_tower);
+        if (h > 0) {
+          move_height(third_tower, first_tower, second_tower, h - 1);
+        }
 
         break;
       case 1:
-        move_stack(&first_tower, &third_tower);
-        move_height(&second_tower, &first_tower, &third_tower, h - 1);
+        move_stack(first_tower, third_tower);
+        if (h > 0) {
+          move_height(second_tower, first_tower, third_tower, h - 1);
+        }
 
         break;
     }
