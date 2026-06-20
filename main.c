@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 #include "./solution.h"
+#include "./termbox2.h"
 
 unsigned char HEIGHT;
 struct Tower* towers[TOWER_COUNT];
