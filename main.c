@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,6 +38,36 @@ read_argument(const char* string) {
   }
 
   return (unsigned char)converted_input;
+}
+
+struct DisplayArguments {
+  struct Tower** towers;
+  pthread_mutex_t* mutex;
+};
+
+void*
+display(void* arg) {
+  struct DisplayArguments* args = (struct DisplayArguments*)arg;
+
+  // Display thread is ready
+  pthread_mutex_unlock(args->mutex);
+
+  for (size_t index = 0; index < TOWER_COUNT; index += 1) {
+    struct Tower* tower = args->towers[index];
+
+    unsigned char current_height = get_current_tower_height(tower);
+    unsigned char* tower_stacks = get_tower_stacks(tower);
+    for (unsigned char tower_stack_index = 0; tower_stack_index < current_height; tower_stack_index += 1) {
+      unsigned char tower_stack = tower_stacks[tower_stack_index];
+
+      tb_printf(index, tower_stack_index, TB_WHITE, TB_DEFAULT, "%hhu", tower_stack);
+    }
+  }
+  tb_present();
+
+  sleep(2);
+
+  return NULL;
 }
 
 int
@@ -81,43 +112,23 @@ main(int argc, char* argv[]) {
   height_of_tower = 2;
   struct Tower** towers = create_towers(height_of_tower);
 
-  /* tb_init(); */
-  /* tb_present(); */
-  /* for (size_t index = 0; index < TOWER_COUNT; index += 1) { */
-  /*   #<{(| printf("Foobar %zu\n", index); |)}># */
-  /*   struct Tower* tower = towers[index]; */
-  /*  */
-  /*   unsigned char current_height = get_current_tower_height(tower); */
-  /*   unsigned char* tower_stacks = get_tower_stacks(tower); */
-  /*   for (unsigned char tower_stack_index = 0; tower_stack_index < current_height; tower_stack_index += 1) { */
-  /*     unsigned char tower_stack = tower_stacks[tower_stack_index]; */
-  /*  */
-  /*     #<{(| printf("Foobar %zu, %hhu\n", index, tower_stack); |)}># */
-  /*     tb_printf(index, tower_stack_index, TB_WHITE, TB_DEFAULT, "%hhu", tower_stack); */
-  /*   } */
-  /* } */
-  /* tb_present(); */
-  /*  */
-  /* sleep(2); */
+  tb_init();
+  tb_present();
+
+  pthread_mutex_t display_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+  struct DisplayArguments args = {.towers = towers, .mutex = &display_mutex};
+
+  pthread_t display_tid;
+  pthread_create(&display_tid, NULL, display, &args);
+
+  // Wait for Display thread to start up
+  pthread_mutex_lock(&display_mutex);
+
+  // Now solve the puzzle
   solve_tower_of_hanoi(towers);
 
-  /* for (size_t index = 0; index < TOWER_COUNT; index += 1) { */
-  /*   #<{(| printf("Foobar %zu\n", index); |)}># */
-  /*   struct Tower* tower = towers[index]; */
-  /*  */
-  /*   unsigned char current_height = get_current_tower_height(tower); */
-  /*   unsigned char* tower_stacks = get_tower_stacks(tower); */
-  /*   for (unsigned char tower_stack_index = 0; tower_stack_index < current_height; tower_stack_index += 1) { */
-  /*     unsigned char tower_stack = tower_stacks[tower_stack_index]; */
-  /*  */
-  /*     #<{(| printf("Foobar %zu, %hhu\n", index, tower_stack); |)}># */
-  /*     tb_printf(index, tower_stack_index, TB_WHITE, TB_DEFAULT, "%hhu", tower_stack); */
-  /*   } */
-  /* } */
-  /* tb_present(); */
-  /*  */
-  /* sleep(2); */
-
+  pthread_join(display_tid, NULL);
   tb_shutdown();
   return 0;
 }
