@@ -89,25 +89,29 @@ move_height(
   struct Tower* dest_tower,
   unsigned char current_height,
   unsigned char up_to_height) {
-  unsigned char current_value_of_delivery_tower = delivery_tower->array[delivery_tower->current_height - 1];
-  unsigned char current_value_of_dest_tower = dest_tower->array[dest_tower->current_height - 1];
+  unsigned char current_value_of_delivery_tower = delivery_tower->array[0];
+  unsigned char current_value_of_dest_tower = dest_tower->array[0];
 
   /* if (current_value_of_delivery_tower == current_value_of_dest_tower - 1) { */
   /*   move_stack(delivery_tower, dest_tower); */
   /* } */
 
+  size_t source_or_dest_tower = ((current_value_of_delivery_tower % 2) == (current_value_of_dest_tower - 1) % 2);
+
   for (unsigned char h = 0; h <= current_height; h += 1) {
     // I think I should move here
     // What is the value (dest_tower - 1) % 2
-    unsigned char current_value_of_dest_tower = dest_tower->array[dest_tower->current_height - 1];
+    /* unsigned char current_value_of_dest_tower = dest_tower->array[dest_tower->current_height - 1]; */
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wswitch-bool"
-    switch ((current_value_of_delivery_tower % 2) == (current_value_of_dest_tower - 1) % 2) {
+    switch (source_or_dest_tower) {
       case true: move_stack(delivery_tower, dest_tower); break;
       default:
       case false: move_stack(delivery_tower, source_tower); break;
     }
+
+    source_or_dest_tower = (source_or_dest_tower + 1) % 2;
   }
 #pragma clang diagnostic pop
 
