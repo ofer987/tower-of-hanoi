@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #include <stdlib.h>
 
 #include "./solution.h"
@@ -86,37 +87,56 @@ move_height(
   struct Tower* delivery_tower,
   struct Tower* source_tower,
   struct Tower* dest_tower,
+  unsigned char current_height,
   unsigned char up_to_height) {
-  for (unsigned char h = 0; h <= up_to_height; h += 1) {
-    switch (h % 2) {
-      case 0: build_tower(delivery_tower, source_tower, dest_tower, h); break;
-      case 1: build_tower(delivery_tower, dest_tower, source_tower, h); break;
+  unsigned char current_value_of_delivery_tower = delivery_tower->array[delivery_tower->current_height - 1];
+  unsigned char current_value_of_dest_tower = dest_tower->array[dest_tower->current_height - 1];
+
+  /* if (current_value_of_delivery_tower == current_value_of_dest_tower - 1) { */
+  /*   move_stack(delivery_tower, dest_tower); */
+  /* } */
+
+  for (unsigned char h = 0; h <= current_height; h += 1) {
+    // I think I should move here
+    // What is the value (dest_tower - 1) % 2
+    unsigned char current_value_of_dest_tower = dest_tower->array[dest_tower->current_height - 1];
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-bool"
+    switch ((current_value_of_delivery_tower % 2) == (current_value_of_dest_tower - 1) % 2) {
+      case true: move_stack(delivery_tower, dest_tower); break;
+      default:
+      case false: move_stack(delivery_tower, source_tower); break;
     }
-    move_stack(dest_tower, source_tower);
+  }
+#pragma clang diagnostic pop
+
+  if (current_height + 1 <= up_to_height) {
+    move_height(delivery_tower, source_tower, dest_tower, current_height + 1, up_to_height);
   }
 }
 
 void
 solve_tower_of_hanoi(struct Tower** towers) {
-  struct Tower* first_tower = towers[0];
+  struct Tower* source_tower = towers[0];
   struct Tower* second_tower = towers[1];
   struct Tower* third_tower = towers[2];
 
-  unsigned char max_height = first_tower->max_height;
+  unsigned char max_height = source_tower->max_height;
 
   for (unsigned char h = 0; h < max_height; h += 1) {
     switch (h % 2) {
       case 0:
-        move_stack(first_tower, second_tower);
+        move_stack(source_tower, second_tower);
         if (h > 0) {
-          move_height(third_tower, first_tower, second_tower, h - 1);
+          move_height(third_tower, source_tower, second_tower, 0, h - 1);
         }
 
         break;
       case 1:
-        move_stack(first_tower, third_tower);
+        move_stack(source_tower, third_tower);
         if (h > 0) {
-          move_height(second_tower, first_tower, third_tower, h - 1);
+          move_height(second_tower, source_tower, third_tower, 0, h - 1);
         }
 
         break;

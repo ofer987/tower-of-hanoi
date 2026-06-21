@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct Tower Tower;
 
 #define TOWER_COUNT 3
