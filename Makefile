@@ -4,6 +4,10 @@ TARGET = tower_of_hanoi
 SRC = main.c solution.c
 OBJ = $(SRC:.c=.o)
 
+TEST_TARGET = test_runner
+TEST_SRC = tests/test_solution.c solution.c tests/unity/unity.c
+TEST_CFLAGS = -Wall -Wextra -std=c2x -g -Itests/unity -DTOWER_TEST_HOOKS
+
 .PHONY: all clean format run test lint build
 
 build: $(TARGET)
@@ -19,7 +23,7 @@ $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -c $< -o dest/$@
 
 clean:
-	rm -f $(addprefix dest/,$(OBJ)) dest/$(TARGET)
+	rm -f $(addprefix dest/,$(OBJ)) dest/$(TARGET) dest/$(TEST_TARGET)
 
 format:
 	clang-format -i $(SRC)
@@ -31,5 +35,8 @@ lint: $(TARGET)
 	@echo "Running linting..."
 	./scripts/check-format.sh
 
-test: $(TARGET)
+test:
 	@echo "Running tests..."
+	mkdir -p -- dest
+	$(CC) $(TEST_CFLAGS) -o dest/$(TEST_TARGET) $(TEST_SRC)
+	./dest/$(TEST_TARGET)
