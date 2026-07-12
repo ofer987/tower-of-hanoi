@@ -6,7 +6,7 @@ OBJ = $(SRC:.c=.o)
 
 TEST_TARGET = test_runner
 TEST_SRC = tests/test_solution.c solution.c tests/unity/unity.c
-TEST_CFLAGS = -Wall -Wextra -std=c2x -g -Itests/unity
+TEST_CFLAGS = -Wall -Wextra -std=c2x -g -Itests/unity -DTOWER_TEST_HOOKS
 
 .PHONY: all clean format run test lint build
 

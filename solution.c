@@ -95,6 +95,9 @@ move_stack(struct Tower* source, struct Tower* dest) {
   dest->current_height += 1;
 
   display_towers(towers);
+#ifdef TOWER_TEST_HOOKS
+  tower_test_on_move(towers);
+#endif
 }
 
 // Move tower from delivery_tower to dest_tower via

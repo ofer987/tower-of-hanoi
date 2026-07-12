@@ -5,8 +5,12 @@
 
 #include "../solution.h"
 
+static size_t moves_observed;
+
 void
-setUp(void) {}
+setUp(void) {
+  moves_observed = 0;
+}
 
 void
 tearDown(void) {}
@@ -60,6 +64,15 @@ count_discs(struct Tower** towers) {
                          + get_current_tower_height(towers[2]));
 }
 
+// Implements the hook declared in solution.h (compiled in because
+// TEST_CFLAGS defines TOWER_TEST_HOOKS). Called by move_stack() after
+// every single move made during solve_tower_of_hanoi().
+void
+tower_test_on_move(struct Tower** towers) {
+  moves_observed += 1;
+  assert_towers_are_valid(towers);
+}
+
 void
 test_create_towers_starts_with_a_valid_stack_on_the_first_tower(void) {
   unsigned char heights[] = {1, 2, 3, 5, 8};
@@ -97,12 +110,31 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_at_every_height(void) {
   }
 }
 
+void
+test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move(void) {
+  unsigned char heights[] = {1, 2, 3, 4, 5, 6};
+
+  for (size_t i = 0; i < sizeof(heights) / sizeof(heights[0]); i += 1) {
+    unsigned char max_height = heights[i];
+    struct Tower** towers = create_towers(max_height);
+
+    solve_tower_of_hanoi(towers);
+
+    // Every move triggered tower_test_on_move(), which asserted the
+    // invariant right then and there - a failure there aborts this test
+    // via Unity's longjmp before we ever reach this line. This just
+    // confirms the hook actually ran instead of silently never firing.
+    TEST_ASSERT_GREATER_THAN(0, moves_observed);
+  }
+}
+
 int
 main(void) {
   UNITY_BEGIN();
 
   RUN_TEST(test_create_towers_starts_with_a_valid_stack_on_the_first_tower);
   RUN_TEST(test_solve_tower_of_hanoi_keeps_a_valid_stack_at_every_height);
+  RUN_TEST(test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move);
 
   return UNITY_END();
 }
