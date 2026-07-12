@@ -14,7 +14,7 @@ a.out
 # Build directories
 build/
 test/
-dist/
+dest/
 out/
 
 # Dependency files
