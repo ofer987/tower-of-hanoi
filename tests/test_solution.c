@@ -64,6 +64,37 @@ count_discs(struct Tower** towers) {
                          + get_current_tower_height(towers[2]));
 }
 
+// Confirms the end state of solve_tower_of_hanoi(): exactly one tower
+// holds every disc, stacked with no number skipped (e.g. 5,4,3,2,1
+// passes; 5,3,2,1 - missing 4 - fails), and the other two towers are
+// empty.
+static void
+assert_no_disc_number_is_skipped(struct Tower** towers, unsigned char max_height) {
+  unsigned char empty_towers = 0;
+  struct Tower* full_tower = NULL;
+
+  for (unsigned char index = 0; index < TOWER_COUNT; index += 1) {
+    if (get_current_tower_height(towers[index]) == 0) {
+      empty_towers += 1;
+    } else {
+      full_tower = towers[index];
+    }
+  }
+
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(2, empty_towers, "exactly two towers must be empty");
+  TEST_ASSERT_NOT_NULL_MESSAGE(full_tower, "one tower must hold every disc");
+  TEST_ASSERT_EQUAL_UINT8_MESSAGE(
+    max_height,
+    get_current_tower_height(full_tower),
+    "the non-empty tower must hold every disc");
+
+  unsigned char* stack = get_tower_stacks(full_tower);
+
+  for (unsigned char index = 1; index < max_height; index += 1) {
+    TEST_ASSERT_EQUAL_UINT8_MESSAGE(1, stack[index - 1] - stack[index], "consecutive discs must not skip a number");
+  }
+}
+
 // Implements the hook declared in solution.h (compiled in because
 // TEST_CFLAGS defines TOWER_TEST_HOOKS). Called by move_stack() after
 // every single move made during solve_tower_of_hanoi().
@@ -128,6 +159,20 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move(void) {
   }
 }
 
+void
+test_solve_tower_of_hanoi_never_skips_a_disc_number(void) {
+  unsigned char heights[] = {1, 2, 3, 4, 5, 6};
+
+  for (size_t i = 0; i < sizeof(heights) / sizeof(heights[0]); i += 1) {
+    unsigned char max_height = heights[i];
+    struct Tower** towers = create_towers(max_height);
+
+    solve_tower_of_hanoi(towers);
+
+    assert_no_disc_number_is_skipped(towers, max_height);
+  }
+}
+
 int
 main(void) {
   UNITY_BEGIN();
@@ -135,6 +180,7 @@ main(void) {
   RUN_TEST(test_create_towers_starts_with_a_valid_stack_on_the_first_tower);
   RUN_TEST(test_solve_tower_of_hanoi_keeps_a_valid_stack_at_every_height);
   RUN_TEST(test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move);
+  RUN_TEST(test_solve_tower_of_hanoi_never_skips_a_disc_number);
 
   return UNITY_END();
 }
