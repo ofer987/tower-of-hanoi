@@ -75,7 +75,7 @@ main(int argc, char* argv[]) {
 
   unsigned char height_of_tower = argument;
 
-  struct Tower** towers = create_towers(height_of_tower);
+  struct Tower* towers = init_towers(height_of_tower);
 
   // Now solve the puzzle
   solve_tower_of_hanoi(towers);

@@ -7,6 +7,8 @@
 
 enum DEST_OR_TEMP_TOWER { DEST_TOWER = 0, TEMP_TOWER };
 
+enum INITIAL_OR_SOLVED_STATE { INITIAL_STATE = 0, SOLVED_STATE };
+
 struct Tower {
   unsigned char index;
   unsigned char max_height;
@@ -14,8 +16,16 @@ struct Tower {
   unsigned char array[255];
 };
 
-static struct Tower* towers[3];
-static size_t display_tower_round = 0;
+static struct Tower towers[3];
+
+struct Tower*
+get_tower_by_index(struct Tower* towers, size_t index) {
+  if (index >= 3) {
+    exit(EXIT_FAILURE);
+  }
+
+  return &towers[index];
+}
 
 unsigned char*
 get_tower_stacks(struct Tower* tower) {
@@ -27,27 +37,30 @@ get_current_tower_height(struct Tower* tower) {
   return tower->current_height;
 }
 
-struct Tower**
-create_towers(unsigned char max_height) {
+struct Tower*
+init_towers(unsigned char max_height) {
   for (unsigned char index = 0; index < TOWER_COUNT; index += 1) {
-    // TODO: reference static Towers
-    towers[index] = malloc(sizeof(struct Tower));
-
-    struct Tower* tower = towers[index];
+    struct Tower* tower = &towers[index];
 
     tower->index = index + 1;
     tower->max_height = max_height;
     tower->current_height = 0;
+
+    for (unsigned char array_index = 0; array_index <= 254; array_index += 1) {
+      tower->array[array_index] = 0;
+    }
+
+    tower->array[255] = 0;
   }
 
-  struct Tower* tower = towers[0];
-  tower->current_height = max_height;
+  struct Tower* first_tower = &towers[0];
+  first_tower->current_height = max_height;
 
   // Tower height is from 1 to 255)
   for (unsigned char tower_index = 0; tower_index < max_height; tower_index += 1) {
     unsigned char height_of_index = max_height - tower_index;
 
-    tower->array[tower_index] = height_of_index;
+    first_tower->array[tower_index] = height_of_index;
   }
 
   return towers;
@@ -55,7 +68,7 @@ create_towers(unsigned char max_height) {
 
 void
 display_tower(size_t tower_index, struct Tower* tower) {
-  printf("Tower %zu) ", tower_index);
+  printf("  Tower %zu) ", tower_index);
 
   for (size_t index = 0; index < tower->current_height; index += 1) {
     printf("%hhu\t", tower->array[index]);
@@ -65,27 +78,27 @@ display_tower(size_t tower_index, struct Tower* tower) {
 }
 
 void
-display_towers(struct Tower** towers) {
-  display_tower_round += 1;
-  printf("Display Towers (Round %zu)\n", display_tower_round);
+display_towers(struct Tower* towers, enum INITIAL_OR_SOLVED_STATE state) {
+  switch (state) {
+    case INITIAL_STATE: printf("Initial State:\n"); break;
+    default:
+    case SOLVED_STATE: printf("Solved State:\n"); break;
+  }
 
-  display_tower(1, towers[0]);
-  display_tower(2, towers[1]);
-  display_tower(3, towers[2]);
+  display_tower(1, &towers[0]);
+  display_tower(2, &towers[1]);
+  display_tower(3, &towers[2]);
 }
 
 void
 move_stack(struct Tower* source, struct Tower* dest) {
-  printf("\t1) moving from Tower %hu to Tower %hu\n", source->index, dest->index);
   if (source->current_height == 0) {
     return;
   }
-  printf("\t2) moving from Tower %hu to Tower %hu\n", source->index, dest->index);
 
   if (source->current_height > source->max_height || dest->current_height >= dest->max_height) {
     exit(EXIT_FAILURE);
   }
-  printf("\t3) moving from Tower %hu to Tower %hu\n", source->index, dest->index);
 
   unsigned char stack_height = source->array[source->current_height - 1];
   source->array[source->current_height - 1] = 0;
@@ -93,8 +106,6 @@ move_stack(struct Tower* source, struct Tower* dest) {
 
   dest->array[dest->current_height] += stack_height;
   dest->current_height += 1;
-
-  display_towers(towers);
 #ifdef TOWER_TEST_HOOKS
   tower_test_on_move(towers);
 #endif
@@ -111,7 +122,6 @@ move_height(
   unsigned char up_to_height,
   enum DEST_OR_TEMP_TOWER temp_or_dest_tower) {
 
-  printf("\tbuilding to height %hhu\n", current_height);
   if (current_height != 0 && current_height > up_to_height) {
     move_height(delivery_tower, temp_tower, dest_tower, current_height - 1, up_to_height, temp_or_dest_tower);
   }
@@ -139,14 +149,18 @@ move_height(
 }
 
 void
-solve_tower_of_hanoi(struct Tower** towers) {
-  struct Tower* source_tower = towers[0];
-  struct Tower* second_tower = towers[1];
-  struct Tower* third_tower = towers[2];
+solve_tower_of_hanoi(struct Tower* towers) {
+  struct Tower* source_tower = &towers[0];
+  struct Tower* second_tower = &towers[1];
+  struct Tower* third_tower = &towers[2];
 
   unsigned char max_height = source_tower->max_height;
 
-  display_towers(towers);
+  // Initial state
+  display_towers(towers, INITIAL_STATE);
 
   move_height(source_tower, third_tower, second_tower, max_height, 1, DEST_TOWER);
+
+  // Final (i.e., solved) state
+  display_towers(towers, SOLVED_STATE);
 }
