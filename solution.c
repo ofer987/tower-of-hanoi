@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "./common.h"
 #include "./solution.h"
 
 enum DEST_OR_TEMP_TOWER { DEST_TOWER = 0, TEMP_TOWER };
@@ -50,7 +51,7 @@ init_towers(unsigned char max_height) {
       tower->array[array_index] = 0;
     }
 
-    tower->array[255] = 0;
+    /* tower->array[255] = 0; */
   }
 
   struct Tower* first_tower = &towers[0];
@@ -68,26 +69,26 @@ init_towers(unsigned char max_height) {
 
 void
 display_tower(size_t tower_index, struct Tower* tower) {
-  printf("  Tower %zu) ", tower_index);
+  /* printf("  Tower %zu) ", tower_index); */
 
   for (size_t index = 0; index < tower->current_height; index += 1) {
-    printf("%hhu\t", tower->array[index]);
+    /* printf("%hhu\t", tower->array[index]); */
   }
 
-  printf("\n");
+  /* printf("\n"); */
 }
 
 void
 display_towers(struct Tower* towers, enum INITIAL_OR_SOLVED_STATE state) {
-  switch (state) {
-    case INITIAL_STATE: printf("Initial State:\n"); break;
-    default:
-    case SOLVED_STATE: printf("Solved State:\n"); break;
-  }
+  /* switch (state) { */
+  /*   case INITIAL_STATE: printf("Initial State:\n"); break; */
+  /*   default: */
+  /*   case SOLVED_STATE: printf("Solved State:\n"); break; */
+  /* } */
 
-  display_tower(1, &towers[0]);
-  display_tower(2, &towers[1]);
-  display_tower(3, &towers[2]);
+  /* display_tower(1, &towers[0]); */
+  /* display_tower(2, &towers[1]); */
+  /* display_tower(3, &towers[2]); */
 }
 
 void
@@ -149,7 +150,7 @@ move_height(
 }
 
 void
-solve_tower_of_hanoi(struct Tower* towers) {
+solve_tower_of_hanoi(struct Tower* towers, render_screen_function render) {
   struct Tower* source_tower = &towers[0];
   struct Tower* second_tower = &towers[1];
   struct Tower* third_tower = &towers[2];
@@ -157,9 +158,11 @@ solve_tower_of_hanoi(struct Tower* towers) {
   unsigned char max_height = source_tower->max_height;
 
   // Initial state
-  display_towers(towers, INITIAL_STATE);
+  /* display_towers(towers, INITIAL_STATE); */
 
   move_height(source_tower, third_tower, second_tower, max_height, 1, DEST_TOWER);
+
+  render(towers);
 
   // Final (i.e., solved) state
   display_towers(towers, SOLVED_STATE);
