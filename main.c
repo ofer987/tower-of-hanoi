@@ -10,7 +10,9 @@
 #define TB_IMPL
 #include "./termbox2.h"
 
-#define SCREEN_SIZE            600
+// TODO: change to real screen size
+// TODO: calculate it first
+#define SCREEN_SIZE            900
 
 #define BORDER_HORIZONTAL_SIZE 30
 #define BORDER_VERTICAL_SIZE   20
@@ -166,7 +168,11 @@ render_towers(enum screen_state* screen_state, struct Tower* towers) {
     // Implement
     struct Tower* tower = get_tower_by_index(towers, i);
     unsigned char max_height = get_current_tower_height(tower);
+    /* printf("Height is %hhu", max_height); */
 
+    char ch[2];
+    snprintf(ch, sizeof(ch), "%hhu", max_height);
+    tb_printf(i * 3, 12, TB_BLACK, TB_WHITE, ch);
     for (unsigned char y = 0; y < max_height; y += 1) {
       struct coordinates coordinate;
       coordinate.x = i * 3;
@@ -175,10 +181,10 @@ render_towers(enum screen_state* screen_state, struct Tower* towers) {
 
       size_t screen_index = coordinates_to_index(coordinate.x, coordinate.y);
 
-      int32_t bg_color = screen_background_colors[AVAILABLE];
-      int32_t color = screen_colors[AVAILABLE];
-      char ch[1];
-      snprintf(ch, sizeof(ch), "%d", y);
+      int32_t bg_color = TB_WHITE;
+      int32_t color = TB_BLACK;
+      char ch[2];
+      snprintf(ch, sizeof(ch), "%hhu", y);
 
       screen_state[screen_index] = USED_BY_SNAKE_HEAD;
 
@@ -270,6 +276,9 @@ main(int argc, char* argv[]) {
 
   // Now solve the puzzle
   solve_tower_of_hanoi(towers, &render_screen);
+
+  int quit_key;
+  scanf("Press any key to quit %d\n", &quit_key);
 
   // shutdown termbox2
   tb_shutdown();
