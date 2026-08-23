@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "./common.h"
 #include "./solution.h"
 
 enum DEST_OR_TEMP_TOWER { DEST_TOWER = 0, TEMP_TOWER };
@@ -149,7 +150,7 @@ move_height(
 }
 
 void
-solve_tower_of_hanoi(struct Tower* towers) {
+solve_tower_of_hanoi(struct Tower* towers, render_screen_function render) {
   struct Tower* source_tower = &towers[0];
   struct Tower* second_tower = &towers[1];
   struct Tower* third_tower = &towers[2];
@@ -160,6 +161,8 @@ solve_tower_of_hanoi(struct Tower* towers) {
   display_towers(towers, INITIAL_STATE);
 
   move_height(source_tower, third_tower, second_tower, max_height, 1, DEST_TOWER);
+
+  render(towers);
 
   // Final (i.e., solved) state
   display_towers(towers, SOLVED_STATE);

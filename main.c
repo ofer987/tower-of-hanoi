@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "./common.h"
 #include "./solution.h"
 #include "./termbox2.h"
 
@@ -152,17 +153,42 @@ render_blank_screen(enum screen_state* screen_states) {
 }
 
 void
-render_screen(enum screen_state* screen_states) {
-  for (size_t i = 0; i < SCREEN_SIZE; i += 1) {
-    struct coordinates coords = index_to_coorindates(i);
+render_towers(enum screen_state* screen_state, struct Tower* towers) {
+  for (size_t i = 0; i < 3; i += 1) {
+    // Implement
+    struct Tower* tower = get_tower_by_index(towers, i);
+    unsigned char max_height = get_current_tower_height(tower);
 
-    size_t state = screen_states[i];
-    int32_t bg_color = screen_background_colors[state];
-    int32_t color = screen_colors[state];
-    char* ch = screen_chars[state];
+    for (unsigned char y = 0; y < max_height; y += 1) {
+      struct coordinates coordinate;
+      coordinate.x = i * 3;
+      coordinate.y = y;
+      coordinate.state = USED_BY_SNAKE_HEAD;
 
-    tb_printf(coords.x, coords.y, color, bg_color, ch);
+      size_t screen_index = coordinates_to_index(coordinate.x, coordinate.y);
+
+      screen_state[screen_index] = USED_BY_SNAKE_HEAD;
+    }
   }
+}
+
+void
+render_screen(struct Tower* towers) {
+  enum screen_state screen_states[SCREEN_SIZE];
+
+  render_blank_screen(screen_states);
+  render_towers(screen_states, towers);
+
+  /* for (size_t i = 0; i < SCREEN_SIZE; i += 1) { */
+  /*   struct coordinates coords = index_to_coorindates(i); */
+  /*  */
+  /*   size_t state = screen_states[i]; */
+  /*   int32_t bg_color = screen_background_colors[state]; */
+  /*   int32_t color = screen_colors[state]; */
+  /*   char* ch = screen_chars[state]; */
+  /*  */
+  /*   tb_printf(coords.x, coords.y, color, bg_color, ch); */
+  /* } */
 
   /* render_the_message_box_boarders(); */
   /* show_results(results); */
@@ -171,7 +197,7 @@ render_screen(enum screen_state* screen_states) {
 }
 
 void
-init_screen(enum screen_state* screen_states) {
+init_screen() {
   setlocale(LC_ALL, "");
 
   /* initialize the termbox library */
@@ -179,6 +205,7 @@ init_screen(enum screen_state* screen_states) {
     exit(EXIT_FAILURE);
   }
 
+  enum screen_state screen_states[SCREEN_SIZE];
   render_blank_screen(screen_states);
 }
 
@@ -218,16 +245,14 @@ main(int argc, char* argv[]) {
     }
   }
 
-  enum screen_state screen_states[SCREEN_SIZE];
-  init_screen(screen_states);
-  render_screen(screen_states);
-
   unsigned char height_of_tower = argument;
-
   struct Tower* towers = init_towers(height_of_tower);
 
+  init_screen();
+  render_screen(towers);
+
   // Now solve the puzzle
-  solve_tower_of_hanoi(towers);
+  solve_tower_of_hanoi(towers, &render_screen);
 
   return 0;
 }

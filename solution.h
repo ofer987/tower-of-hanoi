@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stddef.h>
-typedef struct Tower Tower;
+
+#include "./common.h"
 
 #define TOWER_COUNT 3
 
@@ -18,7 +19,7 @@ struct Tower*
 init_towers(unsigned char);
 
 void
-solve_tower_of_hanoi(struct Tower*);
+solve_tower_of_hanoi(struct Tower*, render_screen_function);
 
 #ifdef TOWER_TEST_HOOKS
 // Only declared when TOWER_TEST_HOOKS is defined at compile time (see the
