@@ -6,6 +6,8 @@
 
 #include "./common.h"
 #include "./solution.h"
+
+#define TB_IMPL
 #include "./termbox2.h"
 
 #define SCREEN_SIZE            600
@@ -148,6 +150,12 @@ render_blank_screen(enum screen_state* screen_states) {
       size_t i = coordinates_to_index(x, y);
 
       screen_states[i] = AVAILABLE;
+
+      int32_t bg_color = screen_background_colors[AVAILABLE];
+      int32_t color = screen_colors[AVAILABLE];
+      char* ch = " ";
+
+      tb_printf(x, y, color, bg_color, ch);
     }
   }
 }
@@ -167,7 +175,14 @@ render_towers(enum screen_state* screen_state, struct Tower* towers) {
 
       size_t screen_index = coordinates_to_index(coordinate.x, coordinate.y);
 
+      int32_t bg_color = screen_background_colors[AVAILABLE];
+      int32_t color = screen_colors[AVAILABLE];
+      char ch[1];
+      snprintf(ch, sizeof(ch), "%d", y);
+
       screen_state[screen_index] = USED_BY_SNAKE_HEAD;
+
+      tb_printf(i * 3, y, color, bg_color, ch);
     }
   }
 }
@@ -207,6 +222,8 @@ init_screen() {
 
   enum screen_state screen_states[SCREEN_SIZE];
   render_blank_screen(screen_states);
+
+  tb_present();
 }
 
 int
@@ -253,6 +270,9 @@ main(int argc, char* argv[]) {
 
   // Now solve the puzzle
   solve_tower_of_hanoi(towers, &render_screen);
+
+  // shutdown termbox2
+  tb_shutdown();
 
   return 0;
 }
