@@ -30,7 +30,7 @@
 #define MAX_ALLOWED_WIDTH       9
 #define MAX_TOWER_DISPLAY_WIDTH ((MAX_ALLOWED_WIDTH + 1) * 2)
 
-enum screen_state { AVAILABLE = 1, FIRST_TOWER, SECOND_TOWER, THIRD_TOWER, TOTAL };
+enum screen_state { AVAILABLE = 1, FIRST_TOWER, SECOND_TOWER, THIRD_TOWER, STEP_INFO, TOTAL };
 
 unsigned char HEIGHT;
 
@@ -79,14 +79,14 @@ size_t screen_colors[TOTAL] = {
   [FIRST_TOWER] = TB_BLUE,
   [SECOND_TOWER] = TB_GREEN,
   [THIRD_TOWER] = TB_RED,
-};
+  [STEP_INFO] = TB_WHITE};
 
 size_t screen_background_colors[TOTAL] = {
   [AVAILABLE] = TB_DEFAULT,
   [FIRST_TOWER] = TB_DEFAULT,
   [SECOND_TOWER] = TB_DEFAULT,
   [THIRD_TOWER] = TB_DEFAULT,
-};
+  [STEP_INFO] = TB_DEFAULT};
 
 size_t
 coordinates_to_index(size_t x, size_t y) {
@@ -167,9 +167,46 @@ void
 handle_terminating_signal(int sig);
 
 void
+render_steps(struct Tower* towers) {
+  size_t steps = get_steps(towers);
+
+  int32_t color = screen_colors[STEP_INFO];
+  int32_t bg_color = screen_background_colors[STEP_INFO];
+
+  if (get_is_solved(towers)) {
+    tb_printf(0, SIDE_VERTICAL_END - 1, color, bg_color, "Solved!");
+    tb_printf(0, SIDE_VERTICAL_END, color, bg_color, "Press any key to quit");
+
+    return;
+  }
+
+  if (steps == 0) {
+    tb_printf(0, SIDE_VERTICAL_END - 1, color, bg_color, "Game started");
+
+    tb_printf(0, SIDE_VERTICAL_END, color, bg_color, "Press CTRL+C to quit");
+    return;
+  }
+
+  size_t total_steps = get_total_steps(towers);
+  char total_steps_buf[4];
+  snprintf(total_steps_buf, sizeof(total_steps_buf), "%zu", total_steps);
+
+  char steps_buf[4];
+  snprintf(steps_buf, sizeof(steps_buf), "%zu", steps);
+
+  tb_printf(0, SIDE_VERTICAL_END - 1, color, bg_color, "Steps: ");
+  tb_printf(8, SIDE_VERTICAL_END - 1, color, bg_color, steps_buf);
+  tb_printf(12, SIDE_VERTICAL_END - 1, color, bg_color, " / ");
+  tb_printf(15, SIDE_VERTICAL_END - 1, color, bg_color, total_steps_buf);
+
+  tb_printf(0, SIDE_VERTICAL_END, color, bg_color, "Press CTRL+C to quit");
+}
+
+void
 render_screen(struct Tower* towers) {
   render_blank_screen();
   render_towers(towers);
+  render_steps(towers);
 
   tb_present();
 

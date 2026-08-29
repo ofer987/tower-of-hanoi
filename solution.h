@@ -6,6 +6,15 @@
 
 #define TOWER_COUNT 3
 
+size_t
+get_total_steps(struct Tower*);
+
+bool
+get_is_solved(struct Tower*);
+
+size_t
+get_steps(struct Tower*);
+
 struct Tower*
 get_tower_by_index(struct Tower*, size_t);
 

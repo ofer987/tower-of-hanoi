@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -162,16 +163,19 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move(void) {
   unsigned char heights[] = {1, 2, 3, 4, 5, 6};
 
   for (size_t i = 0; i < sizeof(heights) / sizeof(heights[0]); i += 1) {
+    moves_observed = 0;
     unsigned char max_height = heights[i];
     struct Tower* towers = init_towers(max_height);
 
     solve_tower_of_hanoi(towers, &render_screen);
+    size_t expected_moves = (size_t)pow(2, max_height) - 1;
 
     // Every move triggered tower_test_on_move(), which asserted the
     // invariant right then and there - a failure there aborts this test
     // via Unity's longjmp before we ever reach this line. This just
     // confirms the hook actually ran instead of silently never firing.
     TEST_ASSERT_GREATER_THAN(0, moves_observed);
+    TEST_ASSERT_EQUAL_UINT8(expected_moves, moves_observed);
   }
 }
 

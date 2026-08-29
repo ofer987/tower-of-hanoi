@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -15,9 +16,43 @@ struct Tower {
   unsigned char max_height;
   unsigned char current_height;
   unsigned char array[256];
+
+  size_t steps;
+  size_t total_steps;
+  bool is_solved;
 };
 
 static struct Tower towers[3];
+
+size_t
+get_total_steps(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  return first_tower->total_steps;
+}
+
+bool
+get_is_solved(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  return first_tower->is_solved;
+}
+
+void
+set_is_solved(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  first_tower->is_solved = true;
+
+  return;
+}
+
+size_t
+get_steps(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  return first_tower->steps;
+}
 
 struct Tower*
 get_tower_by_index(struct Tower* towers, size_t index) {
@@ -52,6 +87,7 @@ init_towers(unsigned char max_height) {
     }
 
     tower->array[255] = 0;
+    tower->total_steps = (size_t)(pow(2, max_height) - 1);
   }
 
   struct Tower* first_tower = &towers[0];
@@ -84,6 +120,7 @@ move_stack(struct Tower* source, struct Tower* dest, struct Tower* towers, rende
   dest->array[dest->current_height] += stack_height;
   dest->current_height += 1;
 
+  towers[0].steps += 1;
   render(towers);
 #ifdef TOWER_TEST_HOOKS
   tower_test_on_move(towers);
@@ -165,5 +202,6 @@ solve_tower_of_hanoi(struct Tower* towers, render_screen_function render) {
 
   move_height(source_tower, third_tower, second_tower, max_height, 1, DEST_TOWER, towers, render);
 
+  set_is_solved(towers);
   render(towers);
 }
