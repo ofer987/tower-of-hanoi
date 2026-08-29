@@ -7,6 +7,10 @@
 
 static size_t moves_observed;
 
+// Do nothing
+void
+render_screen(struct Tower*) {}
+
 void
 setUp(void) {
   moves_observed = 0;
@@ -138,7 +142,7 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_at_every_height(void) {
     unsigned char max_height = heights[i];
     struct Tower* towers = init_towers(max_height);
 
-    solve_tower_of_hanoi(towers);
+    solve_tower_of_hanoi(towers, &render_screen);
     struct Tower* first_tower = get_tower_by_index(towers, 0);
     struct Tower* second_tower = get_tower_by_index(towers, 1);
     struct Tower* third_tower = get_tower_by_index(towers, 2);
@@ -161,7 +165,7 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move(void) {
     unsigned char max_height = heights[i];
     struct Tower* towers = init_towers(max_height);
 
-    solve_tower_of_hanoi(towers);
+    solve_tower_of_hanoi(towers, &render_screen);
 
     // Every move triggered tower_test_on_move(), which asserted the
     // invariant right then and there - a failure there aborts this test
@@ -179,7 +183,7 @@ test_solve_tower_of_hanoi_never_skips_a_disc_number(void) {
     unsigned char max_height = heights[i];
     struct Tower* towers = init_towers(max_height);
 
-    solve_tower_of_hanoi(towers);
+    solve_tower_of_hanoi(towers, &render_screen);
 
     assert_no_disc_number_is_skipped(towers, max_height);
   }
