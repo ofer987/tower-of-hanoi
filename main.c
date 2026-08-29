@@ -1,3 +1,10 @@
+/* Expose POSIX APIs (struct sigaction) under -std=c2x, which otherwise
+   restricts headers to ISO C. _DEFAULT_SOURCE (glibc) and _DARWIN_C_SOURCE
+   (macOS) keep the BSD extensions termbox2.h needs: cfmakeraw, SIGWINCH. */
+#define _POSIX_C_SOURCE 200809L
+#define _DEFAULT_SOURCE
+#define _DARWIN_C_SOURCE
+
 #include <locale.h>
 #include <signal.h>
 #include <stdbool.h>
