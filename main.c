@@ -167,7 +167,40 @@ void
 handle_terminating_signal(int sig);
 
 void
-render_steps(struct Tower* towers) {
+render_step_count_into_buffer(size_t value, char* buf) {
+  snprintf(buf, 4, "%zu", value);
+
+  if (value < 10) {
+    buf[2] = buf[0];
+    buf[0] = ' ';
+    buf[1] = ' ';
+    buf[3] = '\0';
+  } else if (value < 100) {
+    buf[2] = buf[1];
+    buf[1] = buf[0];
+    buf[0] = ' ';
+    buf[3] = '\0';
+  }
+
+  return;
+}
+
+void
+render_steps(size_t current_step, size_t total_steps, uintattr_t color, uintattr_t bg_color) {
+  char total_steps_buf[4];
+  render_step_count_into_buffer(total_steps, total_steps_buf);
+
+  char steps_buf[4];
+  render_step_count_into_buffer(current_step, steps_buf);
+
+  tb_printf(0, SIDE_VERTICAL_END - 1, color, bg_color, "Steps: ");
+  tb_printf(8, SIDE_VERTICAL_END - 1, color, bg_color, steps_buf);
+  tb_printf(12, SIDE_VERTICAL_END - 1, color, bg_color, " / ");
+  tb_printf(15, SIDE_VERTICAL_END - 1, color, bg_color, total_steps_buf);
+}
+
+void
+render_info(struct Tower* towers) {
   size_t steps = get_steps(towers);
 
   int32_t color = screen_colors[STEP_INFO];
@@ -188,16 +221,7 @@ render_steps(struct Tower* towers) {
   }
 
   size_t total_steps = get_total_steps(towers);
-  char total_steps_buf[4];
-  snprintf(total_steps_buf, sizeof(total_steps_buf), "%zu", total_steps);
-
-  char steps_buf[4];
-  snprintf(steps_buf, sizeof(steps_buf), "%zu", steps);
-
-  tb_printf(0, SIDE_VERTICAL_END - 1, color, bg_color, "Steps: ");
-  tb_printf(8, SIDE_VERTICAL_END - 1, color, bg_color, steps_buf);
-  tb_printf(12, SIDE_VERTICAL_END - 1, color, bg_color, " / ");
-  tb_printf(15, SIDE_VERTICAL_END - 1, color, bg_color, total_steps_buf);
+  render_steps(steps, total_steps, color, bg_color);
 
   tb_printf(0, SIDE_VERTICAL_END, color, bg_color, "Press CTRL+C to quit");
 }
@@ -206,7 +230,7 @@ void
 render_screen(struct Tower* towers) {
   render_blank_screen();
   render_towers(towers);
-  render_steps(towers);
+  render_info(towers);
 
   tb_present();
 
