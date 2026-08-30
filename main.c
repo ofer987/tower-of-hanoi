@@ -170,18 +170,22 @@ handle_terminating_signal(int sig);
 
 void
 render_step_count_into_buffer(size_t value, char* buf, size_t buf_size) {
-  snprintf(buf, buf_size, "%zu", value);
-
+  // Can display only up to LINE_BUFFER_SIZE digits
   if (value < 10) {
-    buf[2] = buf[0];
+    snprintf(&buf[2], buf_size - 2, "%zu", value);
     buf[0] = ' ';
     buf[1] = ' ';
-    buf[3] = '\0';
+
+    return;
   } else if (value < 100) {
-    buf[2] = buf[1];
-    buf[1] = buf[0];
+    snprintf(&buf[1], buf_size - 1, "%zu", value);
     buf[0] = ' ';
-    buf[3] = '\0';
+
+    return;
+  } else if (value < 1000) {
+    snprintf(buf, buf_size, "%zu", value);
+
+    return;
   }
 
   return;
