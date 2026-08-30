@@ -7,6 +7,10 @@
 
 static size_t moves_observed;
 
+// Do nothing
+void
+render_screen(struct Tower*) {}
+
 void
 setUp(void) {
   moves_observed = 0;
@@ -138,7 +142,7 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_at_every_height(void) {
     unsigned char max_height = heights[i];
     struct Tower* towers = init_towers(max_height);
 
-    solve_tower_of_hanoi(towers);
+    solve_tower_of_hanoi(towers, &render_screen);
     struct Tower* first_tower = get_tower_by_index(towers, 0);
     struct Tower* second_tower = get_tower_by_index(towers, 1);
     struct Tower* third_tower = get_tower_by_index(towers, 2);
@@ -155,19 +159,33 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_at_every_height(void) {
 
 void
 test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move(void) {
-  unsigned char heights[] = {1, 2, 3, 4, 5, 6};
+  struct Test {
+    unsigned char height;
+    size_t expected_moves;
+  };
 
-  for (size_t i = 0; i < sizeof(heights) / sizeof(heights[0]); i += 1) {
-    unsigned char max_height = heights[i];
+  struct Test tests[] = {
+    {.height = 1, .expected_moves = 1},
+    {.height = 2, .expected_moves = 3},
+    {.height = 3, .expected_moves = 7},
+    {.height = 4, .expected_moves = 15},
+    {.height = 5, .expected_moves = 31},
+    {.height = 6, .expected_moves = 63}};
+
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i += 1) {
+    moves_observed = 0;
+    unsigned char max_height = tests[i].height;
     struct Tower* towers = init_towers(max_height);
 
-    solve_tower_of_hanoi(towers);
+    solve_tower_of_hanoi(towers, &render_screen);
+    size_t expected_moves = tests[i].expected_moves;
 
     // Every move triggered tower_test_on_move(), which asserted the
     // invariant right then and there - a failure there aborts this test
     // via Unity's longjmp before we ever reach this line. This just
     // confirms the hook actually ran instead of silently never firing.
     TEST_ASSERT_GREATER_THAN(0, moves_observed);
+    TEST_ASSERT_EQUAL_UINT8(expected_moves, moves_observed);
   }
 }
 
@@ -179,7 +197,7 @@ test_solve_tower_of_hanoi_never_skips_a_disc_number(void) {
     unsigned char max_height = heights[i];
     struct Tower* towers = init_towers(max_height);
 
-    solve_tower_of_hanoi(towers);
+    solve_tower_of_hanoi(towers, &render_screen);
 
     assert_no_disc_number_is_skipped(towers, max_height);
   }

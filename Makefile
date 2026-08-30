@@ -8,6 +8,13 @@ TEST_TARGET = test_runner
 TEST_SRC = tests/test_solution.c solution.c tests/unity/unity.c
 TEST_CFLAGS = -Wall -Wextra -std=c2x -g -Itests/unity -DTOWER_TEST_HOOKS
 
+# glibc keeps libm separate, so pow() needs -lm on Linux. macOS folds libm
+# into libSystem and doesn't need it (though -lm is harmless there too).
+LDLIBS =
+ifeq ($(shell uname -s),Linux)
+	LDLIBS += -lm
+endif
+
 .PHONY: all clean format run test lint build
 
 build: $(TARGET)
@@ -16,7 +23,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	mkdir -p -- dest
-	$(CC) $(CFLAGS) -o dest/$@ $(addprefix dest/,$^)
+	$(CC) $(CFLAGS) -o dest/$@ $(addprefix dest/,$^) $(LDLIBS)
 
 %.o: %.c
 	mkdir -p -- dest
@@ -38,5 +45,5 @@ lint: $(TARGET)
 test:
 	@echo "Running tests..."
 	mkdir -p -- dest
-	$(CC) $(TEST_CFLAGS) -o dest/$(TEST_TARGET) $(TEST_SRC)
+	$(CC) $(TEST_CFLAGS) -o dest/$(TEST_TARGET) $(TEST_SRC) $(LDLIBS)
 	./dest/$(TEST_TARGET)

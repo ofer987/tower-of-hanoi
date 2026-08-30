@@ -8,6 +8,9 @@ exit_code=0
 for file in *.c *.h; do
   [ -f "$file" ] || continue
 
+  # Do not lint termbox2.h
+  [[ $file == 'termbox2.h' ]] && continue;
+
   if diff -u "$file" <("$clang_format" "$file") > /dev/null 2>&1; then
     echo "OK:   $file"
   else

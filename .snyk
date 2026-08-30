@@ -1,0 +1,8 @@
+# Snyk (https://snyk.io) policy file
+version: v1.25.0
+
+# Vendored third-party single-header library — not our code to fix.
+exclude:
+  global:
+    - termbox2.h
+    - "**/termbox2.h"

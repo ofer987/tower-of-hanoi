@@ -1,8 +1,10 @@
+#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "./common.h"
 #include "./solution.h"
 
 enum DEST_OR_TEMP_TOWER { DEST_TOWER = 0, TEMP_TOWER };
@@ -13,10 +15,44 @@ struct Tower {
   unsigned char index;
   unsigned char max_height;
   unsigned char current_height;
-  unsigned char array[255];
+  unsigned char array[256];
+
+  size_t steps;
+  size_t total_steps;
+  bool is_solved;
 };
 
 static struct Tower towers[3];
+
+size_t
+get_total_steps(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  return first_tower->total_steps;
+}
+
+bool
+get_is_solved(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  return first_tower->is_solved;
+}
+
+void
+set_is_solved(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  first_tower->is_solved = true;
+
+  return;
+}
+
+size_t
+get_steps(struct Tower* towers) {
+  struct Tower* first_tower = &towers[0];
+
+  return first_tower->steps;
+}
 
 struct Tower*
 get_tower_by_index(struct Tower* towers, size_t index) {
@@ -51,6 +87,7 @@ init_towers(unsigned char max_height) {
     }
 
     tower->array[255] = 0;
+    tower->total_steps = (size_t)(pow(2, max_height) - 1);
   }
 
   struct Tower* first_tower = &towers[0];
@@ -67,31 +104,7 @@ init_towers(unsigned char max_height) {
 }
 
 void
-display_tower(size_t tower_index, struct Tower* tower) {
-  printf("  Tower %zu) ", tower_index);
-
-  for (size_t index = 0; index < tower->current_height; index += 1) {
-    printf("%hhu\t", tower->array[index]);
-  }
-
-  printf("\n");
-}
-
-void
-display_towers(struct Tower* towers, enum INITIAL_OR_SOLVED_STATE state) {
-  switch (state) {
-    case INITIAL_STATE: printf("Initial State:\n"); break;
-    default:
-    case SOLVED_STATE: printf("Solved State:\n"); break;
-  }
-
-  display_tower(1, &towers[0]);
-  display_tower(2, &towers[1]);
-  display_tower(3, &towers[2]);
-}
-
-void
-move_stack(struct Tower* source, struct Tower* dest) {
+move_stack(struct Tower* source, struct Tower* dest, struct Tower* towers, render_screen_function render) {
   if (source->current_height == 0) {
     return;
   }
@@ -106,6 +119,9 @@ move_stack(struct Tower* source, struct Tower* dest) {
 
   dest->array[dest->current_height] += stack_height;
   dest->current_height += 1;
+
+  towers[0].steps += 1;
+  render(towers);
 #ifdef TOWER_TEST_HOOKS
   tower_test_on_move(towers);
 #endif
@@ -120,28 +136,54 @@ move_height(
   struct Tower* temp_tower,
   unsigned char current_height,
   unsigned char up_to_height,
-  enum DEST_OR_TEMP_TOWER temp_or_dest_tower) {
+  enum DEST_OR_TEMP_TOWER temp_or_dest_tower,
+  struct Tower* towers,
+  render_screen_function render) {
 
   if (current_height != 0 && current_height > up_to_height) {
-    move_height(delivery_tower, temp_tower, dest_tower, current_height - 1, up_to_height, temp_or_dest_tower);
+    move_height(
+      delivery_tower,
+      temp_tower,
+      dest_tower,
+      current_height - 1,
+      up_to_height,
+      temp_or_dest_tower,
+      towers,
+      render);
   }
 
   switch (temp_or_dest_tower) {
-    case DEST_TOWER: move_stack(delivery_tower, dest_tower); break;
+    case DEST_TOWER: move_stack(delivery_tower, dest_tower, towers, render); break;
     default:
-    case TEMP_TOWER: move_stack(delivery_tower, temp_tower); break;
+    case TEMP_TOWER: move_stack(delivery_tower, temp_tower, towers, render); break;
   }
 
   if (current_height != 0 && current_height > up_to_height) {
     switch (temp_or_dest_tower) {
       case DEST_TOWER:
         temp_or_dest_tower = (temp_or_dest_tower + 1) % 2;
-        move_height(temp_tower, delivery_tower, dest_tower, current_height - 1, up_to_height, temp_or_dest_tower);
+        move_height(
+          temp_tower,
+          delivery_tower,
+          dest_tower,
+          current_height - 1,
+          up_to_height,
+          temp_or_dest_tower,
+          towers,
+          render);
 
         break;
       case TEMP_TOWER:
       default:
-        move_height(dest_tower, delivery_tower, temp_tower, current_height - 1, up_to_height, temp_or_dest_tower);
+        move_height(
+          dest_tower,
+          delivery_tower,
+          temp_tower,
+          current_height - 1,
+          up_to_height,
+          temp_or_dest_tower,
+          towers,
+          render);
 
         break;
     }
@@ -149,18 +191,17 @@ move_height(
 }
 
 void
-solve_tower_of_hanoi(struct Tower* towers) {
+solve_tower_of_hanoi(struct Tower* towers, render_screen_function render) {
   struct Tower* source_tower = &towers[0];
   struct Tower* second_tower = &towers[1];
   struct Tower* third_tower = &towers[2];
 
   unsigned char max_height = source_tower->max_height;
 
-  // Initial state
-  display_towers(towers, INITIAL_STATE);
+  render(towers);
 
-  move_height(source_tower, third_tower, second_tower, max_height, 1, DEST_TOWER);
+  move_height(source_tower, third_tower, second_tower, max_height, 1, DEST_TOWER, towers, render);
 
-  // Final (i.e., solved) state
-  display_towers(towers, SOLVED_STATE);
+  set_is_solved(towers);
+  render(towers);
 }
