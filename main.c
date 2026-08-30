@@ -201,8 +201,8 @@ render_steps(size_t current_step, size_t total_steps, uintattr_t color, uintattr
 
   tb_printf(0, SIDE_VERTICAL_END - 1, color, bg_color, "Steps: ");
   tb_printf(8, SIDE_VERTICAL_END - 1, color, bg_color, steps_buf);
-  tb_printf(12, SIDE_VERTICAL_END - 1, color, bg_color, " / ");
-  tb_printf(15, SIDE_VERTICAL_END - 1, color, bg_color, total_steps_buf);
+  tb_printf(11, SIDE_VERTICAL_END - 1, color, bg_color, " / ");
+  tb_printf(14, SIDE_VERTICAL_END - 1, color, bg_color, total_steps_buf);
 }
 
 void
