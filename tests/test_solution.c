@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -160,15 +159,26 @@ test_solve_tower_of_hanoi_keeps_a_valid_stack_at_every_height(void) {
 
 void
 test_solve_tower_of_hanoi_keeps_a_valid_stack_after_every_single_move(void) {
-  unsigned char heights[] = {1, 2, 3, 4, 5, 6};
+  struct Test {
+    unsigned char height;
+    size_t expected_moves;
+  };
 
-  for (size_t i = 0; i < sizeof(heights) / sizeof(heights[0]); i += 1) {
+  struct Test tests[] = {
+    {.height = 1, .expected_moves = 1},
+    {.height = 2, .expected_moves = 3},
+    {.height = 3, .expected_moves = 7},
+    {.height = 4, .expected_moves = 15},
+    {.height = 5, .expected_moves = 31},
+    {.height = 6, .expected_moves = 63}};
+
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i += 1) {
     moves_observed = 0;
-    unsigned char max_height = heights[i];
+    unsigned char max_height = tests[i].height;
     struct Tower* towers = init_towers(max_height);
 
     solve_tower_of_hanoi(towers, &render_screen);
-    size_t expected_moves = (size_t)pow(2, max_height) - 1;
+    size_t expected_moves = tests[i].expected_moves;
 
     // Every move triggered tower_test_on_move(), which asserted the
     // invariant right then and there - a failure there aborts this test
