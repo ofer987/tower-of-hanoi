@@ -30,6 +30,8 @@
 #define MAX_ALLOWED_WIDTH       9
 #define MAX_TOWER_DISPLAY_WIDTH ((MAX_ALLOWED_WIDTH + 1) * 2)
 
+#define LINE_BUFFER_SIZE        4
+
 enum screen_state { AVAILABLE = 1, FIRST_TOWER, SECOND_TOWER, THIRD_TOWER, STEP_INFO, TOTAL };
 
 unsigned char HEIGHT;
@@ -167,8 +169,8 @@ void
 handle_terminating_signal(int sig);
 
 void
-render_step_count_into_buffer(size_t value, char* buf) {
-  snprintf(buf, 4, "%zu", value);
+render_step_count_into_buffer(size_t value, char* buf, size_t buf_size) {
+  snprintf(buf, buf_size, "%zu", value);
 
   if (value < 10) {
     buf[2] = buf[0];
@@ -187,11 +189,11 @@ render_step_count_into_buffer(size_t value, char* buf) {
 
 void
 render_steps(size_t current_step, size_t total_steps, uintattr_t color, uintattr_t bg_color) {
-  char total_steps_buf[4];
-  render_step_count_into_buffer(total_steps, total_steps_buf);
+  char total_steps_buf[LINE_BUFFER_SIZE];
+  render_step_count_into_buffer(total_steps, total_steps_buf, LINE_BUFFER_SIZE);
 
-  char steps_buf[4];
-  render_step_count_into_buffer(current_step, steps_buf);
+  char steps_buf[LINE_BUFFER_SIZE];
+  render_step_count_into_buffer(current_step, steps_buf, LINE_BUFFER_SIZE);
 
   tb_printf(0, SIDE_VERTICAL_END - 1, color, bg_color, "Steps: ");
   tb_printf(8, SIDE_VERTICAL_END - 1, color, bg_color, steps_buf);
