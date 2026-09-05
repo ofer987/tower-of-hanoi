@@ -1,19 +1,13 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c2x -g
 TARGET = tower_of_hanoi
-SRC = main.c solution.c
+SRC = main.c hanoi.c render.c
 OBJ = $(SRC:.c=.o)
+FORMAT_SRC = main.c hanoi.c hanoi.h render.c render.h
 
 TEST_TARGET = test_runner
-TEST_SRC = tests/test_solution.c solution.c tests/unity/unity.c
-TEST_CFLAGS = -Wall -Wextra -std=c2x -g -Itests/unity -DTOWER_TEST_HOOKS
-
-# glibc keeps libm separate, so pow() needs -lm on Linux. macOS folds libm
-# into libSystem and doesn't need it (though -lm is harmless there too).
-LDLIBS =
-ifeq ($(shell uname -s),Linux)
-	LDLIBS += -lm
-endif
+TEST_SRC = tests/test_hanoi.c hanoi.c tests/unity/unity.c
+TEST_CFLAGS = -Wall -Wextra -std=c2x -g -Itests/unity
 
 .PHONY: all clean format run test lint build
 
@@ -23,7 +17,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJ)
 	mkdir -p -- dest
-	$(CC) $(CFLAGS) -o dest/$@ $(addprefix dest/,$^) $(LDLIBS)
+	$(CC) $(CFLAGS) -o dest/$@ $(addprefix dest/,$^)
 
 %.o: %.c
 	mkdir -p -- dest
@@ -33,7 +27,7 @@ clean:
 	rm -f $(addprefix dest/,$(OBJ)) dest/$(TARGET) dest/$(TEST_TARGET)
 
 format:
-	clang-format -i $(SRC)
+	clang-format -i $(FORMAT_SRC)
 
 run: $(TARGET)
 	./$(TARGET)
@@ -45,5 +39,5 @@ lint: $(TARGET)
 test:
 	@echo "Running tests..."
 	mkdir -p -- dest
-	$(CC) $(TEST_CFLAGS) -o dest/$(TEST_TARGET) $(TEST_SRC) $(LDLIBS)
+	$(CC) $(TEST_CFLAGS) -o dest/$(TEST_TARGET) $(TEST_SRC)
 	./dest/$(TEST_TARGET)
