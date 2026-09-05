@@ -4,7 +4,8 @@
 
 enum render_input {
   RENDER_NONE = 0, /* timeout, resize, or interrupted - caller re-checks state */
-  RENDER_ADVANCE,  /* the viewer wants the next move */
+  RENDER_FORWARD,  /* the viewer wants the next move */
+  RENDER_BACK,     /* the viewer wants to undo the last move */
   RENDER_QUIT,     /* the viewer wants to stop (q / Esc / Ctrl+C) */
 };
 

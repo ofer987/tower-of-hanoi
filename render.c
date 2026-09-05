@@ -149,19 +149,17 @@ render_status(const struct Puzzle* puzzle) {
   uintattr_t fg = foreground[SLOT_STATUS];
   uintattr_t bg = background[SLOT_STATUS];
 
-  if (puzzle->solved) {
-    tb_printf(0, STATUS_ROW, fg, bg, "Solved!");
-    tb_printf(0, HINT_ROW, fg, bg, "any key: quit");
-    return;
-  }
-
   if (puzzle->moves == 0) {
     tb_printf(0, STATUS_ROW, fg, bg, "Ready to solve");
   } else {
     render_progress(puzzle, fg, bg);
   }
 
-  tb_printf(0, HINT_ROW, fg, bg, "any key: step    q/Esc: quit");
+  if (puzzle->solved) {
+    tb_printf(18, STATUS_ROW, fg, bg, "Solved!");
+  }
+
+  tb_printf(0, HINT_ROW, fg, bg, "h/l or arrows: step back/forward    q/Esc: quit");
 }
 
 void
@@ -188,5 +186,11 @@ render_wait_for_input(int timeout_ms) {
     return RENDER_QUIT;
   }
 
-  return RENDER_ADVANCE;
+  if (
+    ev.key == TB_KEY_ARROW_LEFT || ev.key == TB_KEY_BACKSPACE || ev.key == TB_KEY_BACKSPACE2 || ev.ch == 'h'
+    || ev.ch == 'H') {
+    return RENDER_BACK;
+  }
+
+  return RENDER_FORWARD;
 }
