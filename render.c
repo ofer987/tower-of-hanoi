@@ -133,15 +133,15 @@ render_count_field(size_t value, char* buf, size_t buf_size) {
 
 static void
 render_progress(const struct Puzzle* puzzle, uintattr_t fg, uintattr_t bg) {
-  char played[COUNT_BUFFER_SIZE];
-  char total[COUNT_BUFFER_SIZE];
-  render_count_field(puzzle->moves, played, COUNT_BUFFER_SIZE);
-  render_count_field(puzzle->total_moves, total, COUNT_BUFFER_SIZE);
+  char played_buf[COUNT_BUFFER_SIZE];
+  char length_buf[COUNT_BUFFER_SIZE];
+  render_count_field(puzzle->played_moves, played_buf, COUNT_BUFFER_SIZE);
+  render_count_field(puzzle->total_moves, length_buf, COUNT_BUFFER_SIZE);
 
   tb_printf(0, STATUS_ROW, fg, bg, "Moves: ");
-  tb_printf(8, STATUS_ROW, fg, bg, played);
+  tb_printf(8, STATUS_ROW, fg, bg, played_buf);
   tb_printf(11, STATUS_ROW, fg, bg, " / ");
-  tb_printf(14, STATUS_ROW, fg, bg, total);
+  tb_printf(14, STATUS_ROW, fg, bg, length_buf);
 }
 
 static void
@@ -149,7 +149,7 @@ render_status(const struct Puzzle* puzzle) {
   uintattr_t fg = foreground[SLOT_STATUS];
   uintattr_t bg = background[SLOT_STATUS];
 
-  if (puzzle->moves == 0) {
+  if (puzzle->played_moves == 0) {
     tb_printf(0, STATUS_ROW, fg, bg, "Ready to solve");
   } else {
     render_progress(puzzle, fg, bg);

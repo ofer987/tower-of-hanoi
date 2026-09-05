@@ -3,7 +3,6 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <signal.h>
-#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -65,20 +64,6 @@ read_argument(const char* string) {
   return value;
 }
 
-/* Rebuild the puzzle at exactly `target` moves played, by resetting to the
-   start and replaying the first `target` moves. Stepping backward has no
-   dedicated undo: the full move list is already in hand, so replaying a
-   shorter prefix is simpler and, at 511 moves max, free. See
-   docs/adr/0003-solver-is-pure-and-emits-a-move-list.md. */
-static void
-seek_to(struct Puzzle* puzzle, unsigned char discs, const struct Move* moves, size_t target) {
-  puzzle_init(puzzle, discs);
-
-  for (size_t i = 0; i < target; i += 1) {
-    puzzle_apply_move(puzzle, moves[i]);
-  }
-}
-
 int
 main(int argc, char* argv[]) {
   if (argc <= 1) {
@@ -97,19 +82,13 @@ main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
 
-  unsigned char discs = (unsigned char)argument;
-
-  struct Move moves[MAX_MOVES];
-  size_t move_count = solve(discs, moves);
-
   struct Puzzle puzzle;
-  puzzle_init(&puzzle, discs);
+  puzzle_init(&puzzle, (unsigned char)argument);
 
   install_signal_handlers();
   render_init();
   render_puzzle(&puzzle);
 
-  size_t cursor = 0; /* number of moves currently played */
   while (!terminate_requested) {
     enum render_input input = render_wait_for_input(POLL_TIMEOUT_MS);
 
@@ -117,17 +96,14 @@ main(int argc, char* argv[]) {
       break;
     }
 
-    if (input == RENDER_FORWARD && cursor < move_count) {
-      puzzle_apply_move(&puzzle, moves[cursor]);
-      cursor += 1;
-    } else if (input == RENDER_BACK && cursor > 0) {
-      cursor -= 1;
-      seek_to(&puzzle, discs, moves, cursor);
+    if (input == RENDER_FORWARD) {
+      puzzle_forward(&puzzle);
+    } else if (input == RENDER_BACK) {
+      puzzle_back(&puzzle);
     }
 
-    /* Also covers RENDER_NONE (a resize or an interrupted poll) and the ends
-       of the timeline; tb_present() diffs against the front buffer, so an
-       unchanged redraw is free. */
+    /* Also covers RENDER_NONE (a resize or an interrupted poll); tb_present()
+       diffs against the front buffer, so an unchanged redraw is free. */
     render_puzzle(&puzzle);
   }
 

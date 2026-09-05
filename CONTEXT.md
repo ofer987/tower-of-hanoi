@@ -1,9 +1,9 @@
 # Tower of Hanoi
 
 This project animates the Tower of Hanoi puzzle being solved. A predetermined
-algorithm produces the moves; the program plays them back one at a time and
-draws each resulting state in the terminal. It is a visualizer, not a puzzle a
-person plays.
+algorithm produces the moves; the program steps through them one at a time -
+forwards or backwards - and draws each resulting state in the terminal. It is a
+visualizer, not a puzzle a person plays.
 
 ## Language
 
@@ -29,15 +29,24 @@ _Avoid_: tower size, stack height, depth
 **Move**:
 The transfer of one disc from the top of one tower to the top of another. The
 solution is `2^N - 1` moves long.
-_Avoid_: step, turn
+_Avoid_: turn
 
 **Solution**:
 The full ordered list of moves that takes the puzzle from its start state to
 its finished state, produced by the solving algorithm rather than by a player.
 _Avoid_: game, playthrough, run
 
+**Played moves**:
+How many of the solution's moves are currently applied to the towers. It fixes
+exactly which state the towers are in: 0 is the start, `2^N - 1` is solved.
+_Avoid_: cursor, position, index, current step
+
+**Step forward / step back**:
+Playing the next move of the solution, or undoing the last one. Stepping changes
+only the played-move count; the solution itself never changes.
+_Avoid_: undo / redo, scrub, seek
+
 **Puzzle**:
-The three towers together with the progress of the solve so far: how many moves
-have been played, how many the solution has in total, and whether it has
-finished.
+The three towers, the solution in full, and the played-move count. Everything on
+screen is a function of those.
 _Avoid_: game, board, state, session
