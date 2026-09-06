@@ -95,24 +95,26 @@ puzzle_back(struct Puzzle* puzzle) {
    written; the new count is returned. */
 static size_t
 solve_recursive(
-  unsigned char n,
+  unsigned char total_discs,
+  unsigned char remaining_discs,
   unsigned char from,
   unsigned char to,
   unsigned char via,
-  struct Move* out,
-  size_t count) {
+  struct Move* out) {
 
-  if (n == 0) {
-    return count;
+  size_t total_moves = (1UL << total_discs) - 1UL;
+  size_t count = 0;
+  for (; count < total_moves; count += 1) {
+    if (count % 2 == 1) {
+      from = via;
+    }
+    if (remaining_discs == 0) {
+      to = from;
+    }
+
+    out[count].from = from;
+    out[count].to = to;
   }
-
-  count = solve_recursive(n - 1, from, via, to, out, count);
-
-  out[count].from = from;
-  out[count].to = to;
-  count += 1;
-
-  count = solve_recursive(n - 1, via, to, from, out, count);
 
   return count;
 }
@@ -121,5 +123,5 @@ size_t
 solve(unsigned char discs, struct Move* out) {
   assert(discs >= 1 && discs <= MAX_DISCS);
 
-  return solve_recursive(discs, 0, 2, 1, out, 0);
+  return solve_recursive(discs, discs, 0, 2, 1, out);
 }
