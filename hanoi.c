@@ -29,10 +29,14 @@ puzzle_apply_move(struct Puzzle* puzzle, struct Move move) {
   struct Tower* source = &puzzle->towers[move.from];
   struct Tower* dest = &puzzle->towers[move.to];
 
+  /* assert(move.from == move.to && "Cannot change the same tower"); */
   assert(source->height > 0 && "move from an empty tower");
 
   unsigned char disc = source->discs[source->height - 1];
 
+  /* printf("\nMoving from %hhu to %hhu\n", move.from, move.to); */
+  /* printf("\n\n\n\n\tMove from %hhu to %hhu\n", move.from, move.to); */
+  assert(dest->height == 0 && "destination is empty");
   assert((dest->height == 0 || dest->discs[dest->height - 1] > disc) && "disc landed on a smaller disc");
 
   source->discs[source->height - 1] = 0;
@@ -97,31 +101,63 @@ static size_t
 solve_recursive(
   unsigned char total_discs,
   unsigned char remaining_discs,
-  unsigned char from,
-  unsigned char to,
-  unsigned char via,
+  unsigned char tower_01,
+  unsigned char tower_02,
+  unsigned char tower_03,
   struct Move* out) {
 
   size_t total_moves = (1UL << total_discs) - 1UL;
-  size_t count = 0;
-  for (; count < total_moves; count += 1) {
-    if (count % 2 == 1) {
-      from = via;
-    }
-    if (remaining_discs == 0) {
-      to = from;
-    }
+  unsigned char from_towers[2] = {tower_01, tower_02};
+  unsigned char to_towers[2] = {tower_02, tower_03};
 
-    out[count].from = from;
-    out[count].to = to;
+  unsigned char from_tower = from_towers[0];
+  unsigned char other_from_tower = from_towers[1];
+
+  unsigned char to_tower = to_towers[0];
+  unsigned char other_to_tower = to_towers[1];
+
+  // TODO: use value of `total_discs % 2 == 1`
+  if (total_discs % 2 == 1) {
+    to_tower = to_towers[1];
+    other_to_tower = to_towers[0];
   }
 
-  return count;
+  /* printf("Total moves %zu", total_moves); */
+  for (size_t count = 0; count < total_moves; count += 1) {
+    /* if (remaining_discs == 0) { */
+    /*   tower_02 = tower_01; */
+    /* } */
+    /* printf("\nMove %zu is from %hhu to %hhu\n", count, from_tower, to_tower); */
+    out[count].from = from_tower;
+    out[count].to = to_tower;
+
+    if (count == total_moves - 1) {
+      break;
+    }
+
+    if ((count % 2) == 0) {
+      unsigned char temp_to_tower = to_tower;
+
+      // Change to_tower
+      to_tower = other_to_tower;
+      other_to_tower = temp_to_tower;
+      /* printf("Count is %zu, Moving To %hhu to %hhu", count, other_to_tower, to_tower); */
+    } else {
+      unsigned char temp_from_tower = from_tower;
+
+      // Change from_tower
+      from_tower = other_from_tower;
+      other_from_tower = temp_from_tower;
+      /* printf("Count is %zu, Moving From %hhu to %hhu", count, other_from_tower, from_tower); */
+    }
+  }
+
+  return total_moves;
 }
 
 size_t
 solve(unsigned char discs, struct Move* out) {
   assert(discs >= 1 && discs <= MAX_DISCS);
 
-  return solve_recursive(discs, discs, 0, 2, 1, out);
+  return solve_recursive(discs, discs, 0, 1, 2, out);
 }

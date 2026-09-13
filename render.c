@@ -163,10 +163,39 @@ render_status(const struct Puzzle* puzzle) {
 }
 
 void
+render_moves(const struct Puzzle* puzzle) {
+
+  for (size_t count = 0; count < puzzle->total_moves; count += 1) {
+    struct Move current_move = puzzle->solution[count];
+
+    tb_printf(100, AREA_BOTTOM + 1, TB_WHITE, TB_DEFAULT, "Count is %zu", count);
+
+    tb_printf(
+      0,
+      AREA_BOTTOM + count + 1,
+      TB_WHITE,
+      TB_DEFAULT,
+      "Move %zu is from %hhu to %hhu",
+      count,
+      current_move.from,
+      current_move.to);
+
+    tb_printf(
+      30,
+      AREA_BOTTOM + 1,
+      TB_WHITE,
+      TB_DEFAULT,
+      "Height of To Tower: %hhu",
+      puzzle->towers[current_move.to].height);
+  }
+}
+
+void
 render_puzzle(const struct Puzzle* puzzle) {
   render_blank_area();
   render_towers(puzzle);
   render_status(puzzle);
+  render_moves(puzzle);
   tb_present();
 }
 
