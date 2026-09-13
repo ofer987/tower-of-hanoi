@@ -36,7 +36,6 @@ puzzle_apply_move(struct Puzzle* puzzle, struct Move move) {
 
   /* printf("\nMoving from %hhu to %hhu\n", move.from, move.to); */
   /* printf("\n\n\n\n\tMove from %hhu to %hhu\n", move.from, move.to); */
-  assert(dest->height == 0 && "destination is empty");
   assert((dest->height == 0 || dest->discs[dest->height - 1] > disc) && "disc landed on a smaller disc");
 
   source->discs[source->height - 1] = 0;
