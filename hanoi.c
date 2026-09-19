@@ -115,6 +115,8 @@ solve_recursive(
   unsigned char to_tower = to_towers[0];
   unsigned char other_to_tower = to_towers[1];
 
+  unsigned char original_source_tower = tower_01;
+
   // TODO: use value of `total_discs % 2 == 1`
   if (total_discs % 2 == 1) {
     to_tower = to_towers[1];
@@ -122,6 +124,7 @@ solve_recursive(
   }
 
   /* printf("Total moves %zu", total_moves); */
+  unsigned char middle_index = (total_moves - 1) / 2;
   for (size_t count = 0; count < total_moves; count += 1) {
     /* if (remaining_discs == 0) { */
     /*   tower_02 = tower_01; */
@@ -134,7 +137,26 @@ solve_recursive(
       break;
     }
 
-    if ((count % 2) == 0) {
+    /* if (count == middle_index) { */
+    /*   out[count].from = original_source_tower; */
+    /*  */
+    /*   unsigned char temp_to_tower = to_tower; */
+    /*  */
+    /*   // Change to_tower */
+    /*   to_tower = other_to_tower; */
+    /*   other_to_tower = temp_to_tower; */
+    /*  */
+    /*   out[count].to =  */
+    /* } */
+
+    if (count == middle_index) {
+      from_tower = original_source_tower;
+
+      // Change to_tower
+      unsigned char temp_to_tower = to_tower;
+      to_tower = other_to_tower;
+      other_to_tower = temp_to_tower;
+    } else if ((count % 2) == 1) {
       unsigned char temp_to_tower = to_tower;
 
       // Change to_tower

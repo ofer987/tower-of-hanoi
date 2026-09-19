@@ -176,7 +176,7 @@ render_moves(const struct Puzzle* puzzle) {
       TB_WHITE,
       TB_DEFAULT,
       "Move %zu is from %hhu to %hhu",
-      count,
+      count + 1,
       current_move.from,
       current_move.to);
 
